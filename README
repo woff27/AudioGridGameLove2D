@@ -1,0 +1,5 @@
+main.lua contains all of the main gameplay logic. Drag onto Love2D icon or open in Love2D to run. 
+
+conf.lua is the configuration file for Love2D
+
+Game is an audio based game on a grid in prototype development
