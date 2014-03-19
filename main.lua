@@ -5,9 +5,11 @@ function love.load()
 	mPosX = 0
 	mPosY = 0
 	startCnt = 0
+	startbtn = 0
 
 	bpm = 120
 	playcol = 1
+	t = 0
 	--[[CreateBoard(14, 10) max = 16x12 grid for 800x600 display
 	function CreateBoard(x, y) -- x = width # of squares, y = height # of squares 
 		Boardx = x
@@ -47,6 +49,7 @@ function love.load()
 				Grid = {}
 				Grid.x = xCoord
 				Grid.y = yCoord 
+				Grid.Img = startimg
 				table.insert(Board, Grid)
 				xCoord = xCoord + gridSize
 			end
@@ -70,45 +73,62 @@ function love.load()
 		end
 	end]]
 
-	function MouseClick()
-		for i,v in ipairs(Board) do
-			if mPosX > v.x and mPosX < v.x + gridSize and mPosY > v.y and mPosY < v.y + gridSize then
-
-	end
-			
+	
+	
+	quad = love.graphics.newQuad(0,0,50,50,50,50)
 	bg = love.graphics.newImage("assets/BG.png")
 	startimg = love.graphics.newImage("assets/StartGrid.png")
 	--blankimg = love.graphics.newImage("assets/BlankGrid.png")
 end
 
 function love.update(dt)
-	if love.mouse.isDown("l") then
-		mPosX, mPosY = love.mouse.getPosition()    
-		MouseClick()	
+	t = t + dt
+	if t >15/bpm then
+		t = 0
+		playcol = (playcol + 1) % 5 
+		if playcol == 0 then playcol = 1 end
 	end
 end
 
 function love.draw()
 	CreateBoard(4,4)
+
 	--[[for i,v in ipairs(Board) do
 		love.graphics.draw(v.Img, quad, v.x, v.y)
     end]]
-
-end
-
-function bpmUpdate(dt)
-	t = t + dt
-		if t >15/bpm then
-			t = 0
-			playcol = (playcol + 1) % 17
-			if playcol == 0 then playcol = 1 end
+    if love.mouse.isDown("l") then
+		mPosX, mPosY = love.mouse.getPosition()    
+		MouseClick()	
+	end
+    function MouseClick()
+    	love.graphics.print("Mouse",0,0)
+    	if startbtn < 1 then
+			for i,v in ipairs(Board) do
+				if mPosX > v.x and mPosX < v.x + gridSize and mPosY > v.y and mPosY < v.y + gridSize then
+					drawX = v.x
+					drawY = v.y
+					v.startCnt = 1
+					startbtn = 1
+				end
+			end
 		end
+	end
+    function drawStart()
+    	if startCnt < 1 then
+	    	for i,v in ipairs(Board) do
+	    		if v.startCnt == 1 then
+					love.graphics.draw(startimg, quad, v.x, v.y)
+		
+					love.graphics.setColor(255, 255, 255, 200)
+	    			love.graphics.rectangle('fill', (playcol-1)*gridSize+xCoord+4, yCoord+4, 50-8, 50-8)
+				end
+			end
+		end
+	end
+	drawStart()
 end
 
-function drawStart()
-	
-	
-	love.graphics.setColor(255, 255, 255, 200)
-    love.graphics.rectangle('fill', --[[(playcol-1)*gridSize-4]] xCoord+4, yCoord+4, 50-8+gridSize, 50-8)
-end
+
+
+
 
