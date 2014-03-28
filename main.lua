@@ -1,5 +1,5 @@
 function love.load()
-	--Aspects of Game Board
+	--Aspects of Game Board (width, height, x "squares" wide, y "squares" tall, size of grid in pixels)
 	Brd = {}
 	Brd.w = 0
 	Brd.h = 0
@@ -13,6 +13,7 @@ function love.load()
 	Brd.plyCol.l = 1
 	Brd.plyCol.d = 1
 	Brd.plyCol.u = 1
+
 	--colEnd is how "far" the square will go before reseting (hitting a wall)
 	Brd.colEnd = {}
 	Brd.colEnd.r = 1
@@ -35,9 +36,11 @@ function love.load()
 	Snd.u = love.audio.newSource("assets/audio/UpSound.mp3", static)
 	Snd.a = love.audio.newSource("assets/audio/AllSound.mp3", static)
 
+	--Mouse position when clicked
 	mPosX = 0
 	mPosY = 0
 	
+	--Counters so that too many squares are not placed
 	startCnt = 0
 	startbtn = 0
 
@@ -46,6 +49,9 @@ function love.load()
 	bpm = 64
 	Pls = 25
 
+	--Creates the board that is automatically centered on screen based on width and height 
+	--@param x == width, @param y == board height
+	--xCoord and yCoord are the origin points where board is drawn. Based on window w/h.
 	function CreateBoard(x, y)
 		Brd.w = Brd.x * Brd.grdSz
 		Brd.h = Brd.y * Brd.grdSz
@@ -54,10 +60,11 @@ function love.load()
 		yCoord = (((love.graphics.getHeight()/Brd.grdSz) - y)/2)*Brd.grdSz
 
 		bgquad = love.graphics.newQuad(xCoord, yCoord, Brd.w, Brd.h, 800, 800)
-
+		--Board image 
 		love.graphics.setColor(255,255,255,255)
 		love.graphics.draw(bg, bgquad, xCoord, yCoord)
 
+		--Creates invisible grid system over board image
 		for h = 1, Brd.y do
 			for w = 1, Brd.x do
 				Grid = {}
@@ -76,67 +83,73 @@ function love.load()
 end
 
 function love.update(dt)
+	--Setting up Pulse effect for animations
 	Pls = Pls + (dt*500) 
 	if Pls >= 128 then 
 		Pls = 0
 	end
 
-
 	x_Coord = (((love.graphics.getWidth()/Brd.grdSz) - Brd.x)/2)*Brd.grdSz
 	y_Coord = (((love.graphics.getHeight()/Brd.grdSz) - Brd.y)/2)*Brd.grdSz
-	--t = speed of animation, playcol = which column is being animated (ex: playcol+2 skips columns)
 	if startbtn > 0 then
-	t = t + dt/2
-	if t > 15/bpm then 
-		t = 0
-		Brd.plyCol.r = (Brd.plyCol.r + 1) --% Brd.colEnd.r
-		Brd.plyCol.d = (Brd.plyCol.d + 1) --% Brd.colEnd.d
-		Brd.plyCol.u = (Brd.plyCol.u - 1) --% Brd.colEnd.u
-		Brd.plyCol.l = (Brd.plyCol.l - 1) --% Brd.colEnd.l
-		if Brd.plyCol.r == Brd.colEnd.r then
-			Brd.plyCol.r = 1
-			if Brd.plyCol.r == 1 then
-				love.audio.play(Snd.r) 
+		--t = speed of animation based on dt 
+		t = t + dt/2
+		if t > 15/bpm then 
+			t = 0
+			--Square's movement along board by grid (ex: plyCol+2 skips columns)
+			Brd.plyCol.r = (Brd.plyCol.r + 1) 
+			Brd.plyCol.d = (Brd.plyCol.d + 1) 
+			Brd.plyCol.u = (Brd.plyCol.u - 1) 
+			Brd.plyCol.l = (Brd.plyCol.l - 1) 
+			--When col # == end # the square starts at the beginning
+			if Brd.plyCol.r == Brd.colEnd.r then
+				Brd.plyCol.r = 1
+				--Plays sound when hitting edge
+				if Brd.plyCol.r == 1 then
+					love.audio.play(Snd.r) 
+				end
+			end
+			if Brd.plyCol.u == -Brd.colEnd.u then 
+				Brd.plyCol.u= 1 
+				if Brd.plyCol.u == 1 then
+					love.audio.play(Snd.u) 
+				end
+			end
+			if Brd.plyCol.l == -Brd.colEnd.l then 
+				Brd.plyCol.l = 1
+				if Brd.plyCol.l == 1 then
+					love.audio.play(Snd.l)
+				end
+			end
+			if Brd.plyCol.d == Brd.colEnd.d then 
+				Brd.plyCol.d = 1
+				if Brd.plyCol.d == 1 then
+					love.audio.play(Snd.d)
+				end
+			end
+			--Plays sound when all squares hit the edge
+			if Brd.plyCol.d == 1 and Brd.plyCol.r == 1 and Brd.plyCol.u == 1 and Brd.plyCol.l == 1 then
+				love.audio.play(Snd.a)
 			end
 		end
-		if Brd.plyCol.u == -Brd.colEnd.u then 
-			Brd.plyCol.u= 1 
-			if Brd.plyCol.u == 1 then
-				love.audio.play(Snd.u) 
-			end
-		end
-		if Brd.plyCol.l == -Brd.colEnd.l then 
-			Brd.plyCol.l = 1
-			if Brd.plyCol.l == 1 then
-				love.audio.play(Snd.l)
-			end
-		end
-		if Brd.plyCol.d == Brd.colEnd.d then 
-			Brd.plyCol.d = 1
-			if Brd.plyCol.d == 1 then
-				love.audio.play(Snd.d)
-			end
-		end
-		if Brd.plyCol.d == 1 and Brd.plyCol.r == 1 and Brd.plyCol.u == 1 and Brd.plyCol.l == 1 then
-			love.audio.play(Snd.a)
-		end
-	end
 	end 
 end
 
 function love.draw()
+	--Mouse position on left click
     if love.mouse.isDown("l") then
 		mPosX, mPosY = love.mouse.getPosition()    
 		MouseClick()	
 	end
+	--Used to place the starting square and figure out square position based on mouse position
     function MouseClick()
     	if startbtn < 1 then
     		love.audio.play(Snd.s)
+    		--Checks invisible grid board for position to place square
 			for i,v in ipairs(Brd) do
 				if mPosX > v.x and mPosX < v.x + Brd.grdSz and mPosY > v.y and mPosY < v.y + Brd.grdSz then
-					drawX = v.x
-					drawY = v.y
-					Brd.colEnd.r = Brd.x-((v.x-x_Coord)/Brd.grdSz)+1 --ex: 8-((300-200)/50)+1 = 5 
+					--Calculating "end" of square animation based on board size and square position
+					Brd.colEnd.r = Brd.x-((v.x-x_Coord)/Brd.grdSz)+1 
 					Brd.colEnd.d = Brd.y-((v.y-y_Coord)/Brd.grdSz)+1
 					Brd.colEnd.l = Brd.x-(Brd.x-((v.x-x_Coord)/Brd.grdSz))
 					Brd.colEnd.u = Brd.y-(Brd.y-((v.y-y_Coord)/Brd.grdSz))
@@ -148,7 +161,7 @@ function love.draw()
 		end
 	end
 CreateBoard(Brd.x, Brd.y)
-
+	--Flashing animaitons around the edge of the board when the square meets the edge
 	if startbtn > 0 then
 		if Brd.plyCol.l == 1 then
 	    	love.graphics.setColor(0, Pls+150, Pls+25, Pls)
@@ -171,8 +184,7 @@ CreateBoard(Brd.x, Brd.y)
 	   		love.graphics.rectangle('fill', 0, 0, 800, 600) 
 	   	end
 	end
-
-
+	--function draws the board based on width and height as well as the squares and the flashing anims
     function drawStart()
     	if startCnt < 1 then
 	    	for i,v in ipairs(Brd) do
