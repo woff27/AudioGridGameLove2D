@@ -3,8 +3,8 @@ function love.load()
 	Brd = {}
 	Brd.w = 0
 	Brd.h = 0
-	Brd.x = 8
-	Brd.y = 8
+	Brd.x = 7
+	Brd.y = 7
 	Brd.grdSz = 50
 
 	--plyCol is the current playing column/row in each direction
@@ -46,7 +46,7 @@ function love.load()
 
 	--Variables for animation of squares. T refers to speed based on time, BPM as well. Pls is for color changing (Pulse)
 	t = 0
-	bpm = 64
+	bpm = 60.25
 	Pls = 25
 
 	--Creates the board that is automatically centered on screen based on width and height 
@@ -60,10 +60,18 @@ function love.load()
 		yCoord = (((love.graphics.getHeight()/Brd.grdSz) - y)/2)*Brd.grdSz
 
 		bgquad = love.graphics.newQuad(xCoord, yCoord, Brd.w, Brd.h, 800, 800)
-		--Board image 
+		--Board image (changes posiiton slightly depending on board w/h)
 		love.graphics.setColor(255,255,255,255)
+		if Brd.x % 2 == 0 and Brd.y % 2 == 0 then
+			bgquad = love.graphics.newQuad(xCoord, yCoord, Brd.w, Brd.h, 800, 800)
+		elseif Brd.x % 2 ~= 0 and Brd.y %2 == 0 then
+			bgquad = love.graphics.newQuad(xCoord+(Brd.grdSz/2), yCoord, Brd.w, Brd.h, 800, 800)
+		elseif Brd.x % 2 == 0 and Brd.y %2 ~= 0 then
+			bgquad = love.graphics.newQuad(xCoord, yCoord+(Brd.grdSz/2), Brd.w, Brd.h, 800, 800)
+		elseif Brd.x % 2 ~=0 and Brd.y %2 ~= 0 then
+			bgquad = love.graphics.newQuad(xCoord+(Brd.grdSz/2), yCoord+(Brd.grdSz/2), Brd.w, Brd.h, 800, 800)		
+		end
 		love.graphics.draw(bg, bgquad, xCoord, yCoord)
-
 		--Creates invisible grid system over board image
 		for h = 1, Brd.y do
 			for w = 1, Brd.x do
@@ -127,6 +135,10 @@ function love.update(dt)
 					love.audio.play(Snd.d)
 				end
 			end
+			--Plays reset loop
+			if Brd.plyCol.d == 1 or Brd.plyCol.r == 1 or Brd.plyCol.u == 1 or Brd.plyCol.l == 1 then
+				--love.audio.play(Snd.s)
+			end
 			--Plays sound when all squares hit the edge
 			if Brd.plyCol.d == 1 and Brd.plyCol.r == 1 and Brd.plyCol.u == 1 and Brd.plyCol.l == 1 then
 				love.audio.play(Snd.a)
@@ -144,7 +156,6 @@ function love.draw()
 	--Used to place the starting square and figure out square position based on mouse position
     function MouseClick()
     	if startbtn < 1 then
-    		love.audio.play(Snd.s)
     		--Checks invisible grid board for position to place square
 			for i,v in ipairs(Brd) do
 				if mPosX > v.x and mPosX < v.x + Brd.grdSz and mPosY > v.y and mPosY < v.y + Brd.grdSz then
@@ -184,34 +195,35 @@ CreateBoard(Brd.x, Brd.y)
 	   		love.graphics.rectangle('fill', 0, 0, 800, 600) 
 	   	end
 	end
-	--function draws the board based on width and height as well as the squares and the flashing anims
+	--function draws the squares on the board based on width and height as the flashing anims
     function drawStart()
     	if startCnt < 1 then
 	    	for i,v in ipairs(Brd) do
 	    		if v.startCnt == 1 then
+	    			--Starting green square
 		    		love.graphics.draw(startimg, quad, v.x, v.y)
-
+		    		--Flashing right square
 					love.graphics.setColor(0, 100, 0, Pls)
 	    			love.graphics.rectangle('fill', (Brd.plyCol.r-1+v.x/Brd.grdSz)*Brd.grdSz, v.y, 50, 50)
-
+	    			--Colored right square
 					love.graphics.setColor(0, 255, 50, 50)
 	    			love.graphics.rectangle('fill', (Brd.plyCol.r-1+v.x/Brd.grdSz)*Brd.grdSz+4, v.y+4, 50-8, 50-8)
-	    			
+	    			--Flashing down square
 	    			love.graphics.setColor(0, 100, 0, Pls)
 	    			love.graphics.rectangle('fill', v.x, (Brd.plyCol.d-1+v.y/Brd.grdSz)*Brd.grdSz, 50, 50)
-
+	    			--Colored down square
 	    			love.graphics.setColor(0, 255, 50, 50)
 	    			love.graphics.rectangle('fill', v.x+4, (Brd.plyCol.d-1+v.y/Brd.grdSz)*Brd.grdSz+4, 50-8, 50-8)
-
+	    			--Flashing left square
 					love.graphics.setColor(0, 100, 0, Pls)
 	    			love.graphics.rectangle('fill', (Brd.plyCol.l-1+v.x/Brd.grdSz)*Brd.grdSz, v.y, 50, 50)
-
+	    			--Colored left square
 	    			love.graphics.setColor(0, 255, 50, 50)
 	    			love.graphics.rectangle('fill', (Brd.plyCol.l-1+v.x/Brd.grdSz)*Brd.grdSz+4, v.y+4, 50-8, 50-8)
-
+	    			--Flashing up square
 					love.graphics.setColor(0, 100, 0, Pls)
 	    			love.graphics.rectangle('fill', v.x, (Brd.plyCol.u-1+v.y/Brd.grdSz)*Brd.grdSz, 50, 50)
-
+	    			--Colored up square
 	    			love.graphics.setColor(0, 255, 50, 50)
 	    			love.graphics.rectangle('fill', v.x+4, (Brd.plyCol.u-1+v.y/Brd.grdSz)*Brd.grdSz+4, 50-8, 50-8)
 				end
