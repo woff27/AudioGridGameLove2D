@@ -2,8 +2,8 @@
 	Brd = {}
 	Brd.w = 0
 	Brd.h = 0
-	Brd.x = 7
-	Brd.y = 7
+	Brd.x = 0
+	Brd.y = 0
 	Brd.grdSz = 50
 
 	--colEnd is how "far" the square will go before reseting (hitting a wall)
@@ -13,6 +13,43 @@
 	Brd.colEnd.u = 0
 	Brd.colEnd.d = 0
 
+	--plyCol is the current playing column/row in each direction
+	Brd.plyCol = {}
+	Brd.plyCol.r = 1
+	Brd.plyCol.l = 1
+	Brd.plyCol.d = 1
+	Brd.plyCol.u = 1
+
+	flashColR = 1
+	flashColD = 1
+	flashColU = 1
+	flashColL = 1
+
+	--Sounds played when square touches wall (Start, Left, Right, Up, Down, All)
+	HSnd = {}
+	--HSnd.s = love.audio.newSource("assets/audio/HouseStartSound.mp3", static)
+	HSnd.r = love.audio.newSource("assets/audio/HouseRightSound.mp3", static)
+	HSnd.d = love.audio.newSource("assets/audio/HouseDownSound.mp3", static)
+	HSnd.l = love.audio.newSource("assets/audio/HouseLeftSound.mp3", static)
+	HSnd.u = love.audio.newSource("assets/audio/HouseUpSound.mp3", static)
+	HSnd.a = love.audio.newSource("assets/audio/HouseAllSound.mp3", static)
+
+	DSnd = {}
+	--HSnd.s = love.audio.newSource("assets/audio/HouseStartSound.mp3", static)
+	DSnd.r = love.audio.newSource("assets/audio/DubRightSound.mp3", static)
+	DSnd.d = love.audio.newSource("assets/audio/DubDownSound.mp3", static)
+	DSnd.l = love.audio.newSource("assets/audio/DubLeftSound.mp3", static)
+	DSnd.u = love.audio.newSource("assets/audio/DubUpSound.mp3", static)
+	DSnd.a = love.audio.newSource("assets/audio/DubAllSound.mp3", static)
+
+	Play = {}
+	Play.u = HSnd.u
+	Play.r = HSnd.r
+	Play.d = HSnd.d
+	Play.l = HSnd.l
+	Play.a = HSnd.a
+
+	Num = {"1","2","3","4","5","6","7","8","9"}
 
 	--Creates the board that is automatically centered on screen based on width and height 
 	--@param x == width, @param y == board height
@@ -57,13 +94,6 @@
 	--Used to place the starting square and figure out square position based on mouse position
 	function MouseClick()
     	if startbtn < 1 then
-    		--plyCol is the current playing column/row in each direction
-			Brd.plyCol = {}
-			Brd.plyCol.r = 1
-			Brd.plyCol.l = 1
-			Brd.plyCol.d = 1
-			Brd.plyCol.u = 1
-			
     		--Checks invisible grid board for position to place square
 			for i,v in ipairs(Brd) do
 				if mPosX > v.x and mPosX < v.x + Brd.grdSz and mPosY > v.y and mPosY < v.y + Brd.grdSz then
@@ -116,29 +146,84 @@
 		end
 	end
 
-	--Flashing animaitons around the edge of the board when the square meets the edge
-	function FlashSq()
+	--Flashing animaitons calculations around the edge of the board when the square meets the edge
+	function FlashSq(dt)
 		if startbtn > 0 then
-			if Brd.plyCol.l == 1 then
-		    	love.graphics.setColor(0, Pls+150, Pls+25, Pls)
-		   		love.graphics.rectangle('fill', 0, 0, x_Coord, 600) 
-		 	end
-		 	if Brd.plyCol.u == 1 then
-		    	love.graphics.setColor(0, Pls+150, Pls+25, Pls)
-		   		love.graphics.rectangle('fill', 0, 0, 800, y_Coord) 
-		 	end
-		 	if Brd.plyCol.r == 1 then
-		    	love.graphics.setColor(0, Pls+150, Pls+25, Pls)
-		   		love.graphics.rectangle('fill', x_Coord+(Brd.x*Brd.grdSz), 0, x_Coord, 600) 
-		 	end
-		 	if Brd.plyCol.d == 1 then
-		    	love.graphics.setColor(0, Pls+150, Pls+25, Pls)
-		   		love.graphics.rectangle('fill', 0, (y_Coord+Brd.y*Brd.grdSz), 800, y_Coord) 
-		 	end
-		 	if Brd.plyCol.d == 1 and Brd.plyCol.r == 1 and Brd.plyCol.u == 1 and Brd.plyCol.l == 1 then
-		 		love.graphics.setColor(Pls+100, Pls+150, Pls+25, Pls)
-		   		love.graphics.rectangle('fill', 0, 0, 800, 600) 
-		   	end
+			--if Brd.plyCol.d == 1 or Brd.plyCol.r == 1 or Brd.plyCol.u == 1 or Brd.plyCol.l == 1 then			
+				f = f + dt/2
+				if f > 15/bpm then
+					f = 0
+					flashColR = flashColR+dt*25 
+					flashColD = flashColD + 1 
+					flashColU = flashColU - 1
+					flahsColL = flashColL - 1
+					--insert code about flashing squares here
+				end 
+			--end
+		end
+	end
+	-- Drawing of flashing square animations
+	function FlashLeft()
+		love.graphics.setColor(0, Pls+150, Pls+25, Pls)
+   		love.graphics.rectangle('fill', 0, 0, x_Coord, 600) 
+	end
+
+	function FlashRight()
+		xDraw = x_Coord+(Brd.x*Brd.grdSz)
+		xDrawM = x_Coord+(Brd.x*Brd.grdSz)
+		if (xDrawM+flashColR) < 600 then
+    		love.graphics.setColor(0, 150+Pls, 25+Pls, Pls)
+   			love.graphics.rectangle('fill', xDraw, 0, x_Coord, 600)
+   		end
+		if xDrawM >600 then
+			xDrawM = xDraw
+		end
+	end
+
+	function FlashUp()
+    	love.graphics.setColor(0, Pls+150, Pls+25, Pls)
+   		love.graphics.rectangle('fill', 0, 0, 800, y_Coord)
+   	end
+
+   	function FlashDown()
+   		love.graphics.setColor(0, Pls+150, Pls+25, Pls)
+		love.graphics.rectangle('fill', 0, (y_Coord+Brd.y*Brd.grdSz), 800, y_Coord) 
+	end
+
+	function FlashCent()
+		love.graphics.setColor(Pls+100, Pls+150, Pls+25, Pls)
+  		love.graphics.rectangle('fill', 0, 0, 800, 600)
+  	end
+
+  	function BoardHeight()
+  		love.graphics.setNewFont(20)
+		love.graphics.setColor(255,255,255)
+		love.graphics.printf("How Tall?\n"..Brd.y.." \n\nPress Enter when finished", 300, 200, 200, 'center')
+    	function love.keypressed(key)
+        	for i = 1, table.getn(Num) do 
+            	if string.match(Num[i], key) then
+					Brd.y = key
+				end
+			end
+			if key == "return" then
+				BoardW = true
+				BoardH = false
+			end
+		end
+	end
+
+  	function BoardWidth()
+	love.graphics.printf("How Wide?\n"..Brd.x.." \n\nPress Enter when finished", 300, 200, 200, 'center')
+    	function love.keypressed(key)
+        	for i = 1, table.getn(Num) do 
+            	if string.match(Num[i], key) then
+					Brd.x = key
+				end
+			end
+			if key == "return" then
+				BoardW = false
+				GameStart = true
+			end
 		end
 	end
 
@@ -158,30 +243,30 @@
 					Brd.plyCol.r = 1
 					--Plays sound when hitting edge
 					if Brd.plyCol.r == 1 then
-						love.audio.play(Snd.r) 
+						love.audio.play(Play.r) 
 					end
 				end
 				if Brd.plyCol.u == -Brd.colEnd.u then 
 					Brd.plyCol.u= 1 
 					if Brd.plyCol.u == 1 then
-						love.audio.play(Snd.u) 
+						love.audio.play(Play.u) 
 					end
 				end
 				if Brd.plyCol.l == -Brd.colEnd.l then 
 					Brd.plyCol.l = 1
 					if Brd.plyCol.l == 1 then
-						love.audio.play(Snd.l)
+						love.audio.play(Play.l)
 					end
 				end
 				if Brd.plyCol.d == Brd.colEnd.d then 
 					Brd.plyCol.d = 1
 					if Brd.plyCol.d == 1 then
-						love.audio.play(Snd.d)
+						love.audio.play(Play.d)
 					end
 				end
 				--Plays sound when all squares hit the edge
 				if Brd.plyCol.d == 1 and Brd.plyCol.r == 1 and Brd.plyCol.u == 1 and Brd.plyCol.l == 1 then
-					love.audio.play(Snd.a)
+					love.audio.play(Play.a)
 				end
 			end
 		end
